@@ -6,9 +6,9 @@
 - Impostata la pagina HTML dell'eCommerce
 ## Martedì 22 Maggio
 * Modifiche
-- Aggiunto foglio di stile per il sito
-- Iniziata scrittura degli shader
-- Implementata il caricamento del modello 3D
+-- Aggiunto foglio di stile per il sito
+-- Iniziata scrittura degli shader
+-- Implementata il caricamento del modello 3D
 * Problemi
-- Problemi di compilazione dello shader
-- Problema di caricamento del modello
+-- Problemi di compilazione dello shader
+-- Problema di caricamento del modello
