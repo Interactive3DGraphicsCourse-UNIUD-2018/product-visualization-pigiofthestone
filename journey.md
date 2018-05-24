@@ -10,5 +10,14 @@
  - Iniziata scrittura degli shader
  - Implementata il caricamento del modello 3D
 >Problemi
- - Problemi di compilazione dello shader
- - Problema di caricamento del modello
+ - Problemi di compilazione dello shader(RISOLTO)
+ - Problema di caricamento del modello(RISOLTO)
+## Mercoledì 23 Maggio
+>Modifiche
+- Scritto lo shader combinato con componente diffusiva e speculare
+>Problemi
+- Problemi di compilazione dello shader(RISOLTO)
+- Problema sul modello: alcune parti sono in trasparenza da un lato e completamente opache dall'altro (in particolare base e parabola intorno alla lampadina
+### Giovedì 24 Maggio
+>Problemi
+- Ricaricato il progetto di ieri, l'oggetto viene caricato ma non viene visualizzato
