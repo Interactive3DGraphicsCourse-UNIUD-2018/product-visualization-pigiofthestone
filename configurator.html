@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Welcome to ACME eCommerce website</title>
-		<!--link rel="stylesheet" type="text/css" href="configurator.css"><link/-->
+		<link rel="stylesheet" type="text/css" href="configurator.css"></link>
 		
 		<style>
 			body {
@@ -115,14 +115,15 @@
 		}
 	</script>
 	
-	
+	<div class="threejs">
 	<script>
 		
 		var renderer = new THREE.WebGLRenderer({antialias: true});
-		var camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 1000);
+		var camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 1000);
 		var controls = new THREE.OrbitControls( camera, renderer.domElement); //Controlli sulla camera
 		var scene = new THREE.Scene();
-
+		camera.position.set(0,100,200);
+		
 		//Luce puntiforme bianca
 		var lightParameters = {
 			red: 1.0,
@@ -162,7 +163,7 @@
 
 		//Carico il modello da source
 		loader.load(
-			'model/pixar_lamp.obj',
+			'model/Pixar Lamp.obj',
 			function (object){
 				var myMaterial = new THREE.ShaderMaterial({uniforms: uniforms, vertexShader: vs, fragmentShader: fs});
 				object.traverse(function(child) {
@@ -172,9 +173,15 @@
 							}),
 				scene.add(object);
 		});
-				 
 		
-	
+		
+		//Piano per debug
+		var geometry = new THREE.PlaneBufferGeometry(1000, 1000, 32);
+		var material = new THREE.MeshBasicMaterial( {wireframe: true, color: 0x080808, side: THREE.DoubleSide} );
+		var plane = new THREE.Mesh( geometry, material);
+		plane.rotation.x = Math.PI/180;
+		scene.add(plane);
+		
 		
 
 		//Luce puntiforme
@@ -195,10 +202,7 @@
 			renderer.gammaOutput = true;
 			renderer.setClearColor( 0xf0f0f0 );
 			
-			camera.position.set(-240, 120, 260);
 			scene.add(camera);
-			
-			
 			scene.add(lightMesh);
 			
 			document.body.appendChild(renderer.domElement);
@@ -220,7 +224,7 @@
 		function onResize() {
 			
 			renderer.setSize(window.innerWidth, window.innerHeight);
-			camera.aspect = (window.innerWidth, window.innerHeight);
+			camera.aspect = (window.innerWidth / window.innerHeight);
 			camera.updateProjectionMatrix();
 		}
 		
@@ -286,8 +290,10 @@
 		
 
     </script>
+		</div>
+
 		
-<!--------------------------------------- SITO WEB -----------------------------------------
+<!--------------------------------------- SITO WEB ---------------------------------------->
 	<header>
   		<nav>
     		<ul>
@@ -328,7 +334,6 @@
     		</div>
   		</div>
 	</div>
--->
 
 
 	</body>
