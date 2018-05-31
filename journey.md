@@ -18,21 +18,21 @@
 >Problemi
 - Problemi di compilazione dello shader(RISOLTO)
 - Problema sul modello: alcune parti sono in trasparenza da un lato e completamente opache dall'altro (in particolare base e parabola intorno alla lampadina
-### Giovedì 24 Maggio
+## Giovedì 24 Maggio
 >Problemi
 - Ricaricato il progetto di ieri, l'oggetto viene caricato ma non viene visualizzato (RISOLTO)
-### Domenica 27 Maggio
+## Domenica 27 Maggio
 >Modifiche
 - Scelto un altro modello di lampada a causa della cattiva modellazione del precedente modello
 - Modificato lo shader di partenza per includere la prima texture
 >Problemi
 - Problemi di compilazione dello shader(RISOLTO)
-### Martedì 29 Maggio
+## Martedì 29 Maggio
 >Modifiche
 - Tentativo di implementare l'environment map con scarsi successi
 >Problemi
 - Lo shader non compila più a causa di un'estensione GL_OES_standard_derivatives (NON RISOLTO MA ABBANDONATO)
-### Giovedì 31 Maggio
+## Giovedì 31 Maggio
 >Modifiche
 - Diviso il modello in 3 parti: la base, la lampadina e il corpo
 - Inserite due texture in legno una per la base(Bamboo) e una per il corpo(Legno classico)
