@@ -11,13 +11,34 @@ body {
     overflow: hidden;
 }
 
+#info {
+	position: absolute;
+	top: 50px;
+	width: 100%;
+	color: #222;
+	padding: 5px;
+	font-family: Monospace;
+	font-size: 13px;
+	text-align: center;
+	left: -4px;
+}
+
+a {
+	color: #000;
+	text-decoration: none;
+}
+
+a:hover {
+	color: #0080ff;
+}
+
 /*------------------------------------- HEADER E NAV -----------------------------------*/
 nav{
   background: #fff;
   height: 52px;
   width: 100%;
   position: fixed;
-  top: 0;
+  top: 0px;
   left: 0;
 }
 
@@ -64,6 +85,13 @@ nav ul li a::before{
 
 nav ul li a:hover:before{
   right: 0;
+}
+
+header h1{
+	position: relative;
+	margin-top: 0;
+	object-position: center;
+	
 }
 
 
@@ -116,8 +144,8 @@ nav ul li a:hover:before{
   position: relative;
   font-size: 10px;
   font-weight: 300;
-  color: #DB0000;
-  background: #DB1215;
+  color: #fff;
+  background: #C01114;
   padding: 2px 5px;
   border-radius: 4px;
   top: -2px;
@@ -247,13 +275,7 @@ nav ul li a:hover:before{
   margin-left: 10px;
 }
 
-.threejs {
-	position: absolute;
-	top: 10%;
-	left: 10%;
-	box-shadow: -10px 20px 15px -10px rgb(0,0,0);
-	z-index: 1;
-}
+
 
 /*------------------------Animazioni---------------------------------*/
 .animated {
@@ -317,4 +339,6 @@ nav ul li a:hover:before{
 
 .bounceInDown {
   animation-name: bounceInDown;
+}
+.logo {
 }

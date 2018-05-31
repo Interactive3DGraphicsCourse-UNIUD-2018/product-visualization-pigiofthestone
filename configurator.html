@@ -31,21 +31,21 @@
 	</script>
 
 	<!--Fragment Shader-->
-	<script type="text/x-glsl" id="fragment">
+	<script type="text/x-glsl" id="specular-diffuse-fragment">
 		varying vec3 vNormal;
 		varying vec3 vPosition;
 		varying vec2 uVv;
 		uniform vec3 pointLightPosition; // in world space
 		uniform vec3 clight;
-		uniform vec3 ambientLight;
-		uniform vec3 cspec;
-		uniform vec3 cdiff;
-		uniform float roughness;
-		uniform sampler2D normalMap;
-		uniform sampler2D aoMap;
-		uniform vec2 normalScale;
+		uniform sampler2D specularMap;
+		uniform sampler2D diffuseMap;
+		uniform sampler2D roughnessMap;
+		uniform vec2 textureRepeat;
 		const float PI = 3.14159;
-		#extension GL_OES_standard_derivatives : enable
+
+		vec3 cdiff;
+		vec3 cspec;
+		float roughness;
 			
 		vec3 FSchlick(float lDoth) {
 			return (cspec + (vec3(1.0)-cspec)*pow(1.0 - lDoth,5.0));
@@ -53,39 +53,23 @@
 
 		float DGGX(float nDoth, float alpha) {
 			float alpha2 = alpha*alpha;
-			float d = nDoth*nDoth*(alpha2-1.0)+1.0;
-			return (  alpha2 / (PI*d*d));
+			float d = nDoth*nDoth*(alpha2 - 1.0) + 1.0;
+			return (  alpha2 / ( PI * d * d));
 		}
 			
 		float G1(float dotProduct, float k) {
-			return (dotProduct / (dotProduct*(1.0-k) + k) );	
+			return (dotProduct / (dotProduct * (1.0 - k) + k));	
 		}
 			
 		float GSmith(float nDotv, float nDotl) {
-			float k = roughness*roughness;
+			float k = roughness * roughness;
 			return G1(nDotl,k)*G1(nDotv,k);
-		}
-			
-		
-		
-		vec3 perturbNormal2Arb( vec3 eye_pos, vec3 surf_norm ) {
-			vec3 q0 = dFdx( eye_pos.xyz );
-			vec3 q1 = dFdy( eye_pos.xyz );
-			vec2 st0 = dFdx( uVv.st );
-			vec2 st1 = dFdy( uVv.st );
-			vec3 S = normalize(  q0 * st1.t - q1 * st0.t );
-			vec3 T = normalize( -q0 * st1.s + q1 * st0.s );
-			vec3 N =  surf_norm ;
-			vec3 mapN = normalize(texture2D( normalMap, uVv ).xyz * 2.0 - 1.0);
-			mapN.xy = normalScale * mapN.xy;
-			mat3 tsn = mat3( S, T, N );
-			return normalize( tsn * mapN );
 		}
 
 		void main() {
 			vec4 lPosition = viewMatrix * vec4( pointLightPosition, 1.0 );
 			vec3 l = normalize(lPosition.xyz - vPosition.xyz);
-			vec3 n = perturbNormal2Arb( vPosition, normalize( vNormal ));
+			vec3 n = normalize( vNormal );
 			vec3 v = normalize( -vPosition);
 			vec3 h = normalize( v + l);
 
@@ -95,12 +79,87 @@
 			float nDoth = max(dot( n, h ),0.000001);
 			float vDoth = max(dot( v, h ),0.000001);
 			float nDotv = max(dot( n, v ),0.000001);
+
+			cdiff = texture2D(diffuseMap, uVv * textureRepeat).rgb;
+			cdiff = pow( cdiff, vec3(2.2));
+			cspec = texture2D( specularMap, uVv * textureRepeat).rgb;
+			cspec = pow( cspec, vec3(2.2));
+			roughness = texture2D(roughnessMap, uVv * textureRepeat).r;
+
 			vec3 fresnel = FSchlick(lDoth);
 
-			vec3 BRDF = (vec3(1.0)-fresnel)*cdiff/PI + fresnel*GSmith(nDotv,nDotl)*DGGX(nDoth,roughness*roughness)/
-					(4.0*nDotl*nDotv);
+			vec3 BRDF = (vec3(1.0) - fresnel) * cdiff/PI + fresnel * GSmith(nDotv,nDotl) * DGGX(nDoth, roughness * roughness)/
+					(4.0 * nDotl * nDotv);
 
-			vec3 outRadiance = PI* clight * nDotl * BRDF + ambientLight*cdiff*texture2D( aoMap, uVv ).xyz;
+			vec3 outRadiance = PI * clight * nDotl * BRDF;
+			
+			// gamma encode the final value
+			gl_FragColor = vec4(pow( outRadiance, vec3(1.0/2.2)), 1.0);
+			}
+		</script>
+
+	<!--Fragment Shader-->
+	<script type="text/x-glsl" id="fragment-for-base">
+		varying vec3 vNormal;
+		varying vec3 vPosition;
+		varying vec2 uVv;
+		uniform vec3 pointLightPosition; // in world space
+		uniform vec3 clight;
+		uniform sampler2D specularMapBase;
+		uniform sampler2D diffuseMapBase;
+		uniform sampler2D roughnessMapBase;
+		uniform vec2 textureRepeatBase;
+		const float PI = 3.14159;
+
+		vec3 cdiff;
+		vec3 cspec;
+		float roughness;
+			
+		vec3 FSchlick(float lDoth) {
+			return (cspec + (vec3(1.0)-cspec)*pow(1.0 - lDoth,5.0));
+		}
+
+		float DGGX(float nDoth, float alpha) {
+			float alpha2 = alpha*alpha;
+			float d = nDoth*nDoth*(alpha2 - 1.0) + 1.0;
+			return (  alpha2 / ( PI * d * d));
+		}
+			
+		float G1(float dotProduct, float k) {
+			return (dotProduct / (dotProduct * (1.0 - k) + k));	
+		}
+			
+		float GSmith(float nDotv, float nDotl) {
+			float k = roughness * roughness;
+			return G1(nDotl,k)*G1(nDotv,k);
+		}
+
+		void main() {
+			vec4 lPosition = viewMatrix * vec4( pointLightPosition, 1.0 );
+			vec3 l = normalize(lPosition.xyz - vPosition.xyz);
+			vec3 n = normalize( vNormal );
+			vec3 v = normalize( -vPosition);
+			vec3 h = normalize( v + l);
+
+			// small quantity to prevent divisions by 0
+			float nDotl = max(dot( n, l ),0.000001);
+			float lDoth = max(dot( l, h ),0.000001);
+			float nDoth = max(dot( n, h ),0.000001);
+			float vDoth = max(dot( v, h ),0.000001);
+			float nDotv = max(dot( n, v ),0.000001);
+
+			cdiff = texture2D(diffuseMapBase, uVv * textureRepeatBase).rgb;
+			cdiff = pow( cdiff, vec3(2.2));
+			cspec = texture2D( specularMapBase, uVv * textureRepeatBase).rgb;
+			cspec = pow( cspec, vec3(2.2));
+			roughness = texture2D(roughnessMapBase, uVv * textureRepeatBase).r;
+
+			vec3 fresnel = FSchlick(lDoth);
+
+			vec3 BRDF = (vec3(1.0) - fresnel) * cdiff/PI + fresnel * GSmith(nDotv,nDotl) * DGGX(nDoth, roughness * roughness)/
+					(4.0 * nDotl * nDotv);
+
+			vec3 outRadiance = PI * clight * nDotl * BRDF;
 			
 			// gamma encode the final value
 			gl_FragColor = vec4(pow( outRadiance, vec3(1.0/2.2)), 1.0);
@@ -126,31 +185,29 @@
 			intensity: 1.0
 		}
 		
-		var ambientLightParameters = {
-			red: 1.0,
-			green: 1.0,
-			blue: 1.0,
-			intensity: 1.0
+		var textureParameters = {
+			material: "Wood",
+			repeatS: 1.0,
+			repeatT: 1.0
 		}
 		
-		var textureParameters = {
-			normalScale: 0.0
-		}
-
-		var normalMap = loadTexture("texture/Aluminum_normal.png");
-		var aoMap = loadTexture("texture/Aluminum_Diffuse.png");
+		
+		var diffuseMap = loadTexture("texture/" + textureParameters.material + "_Base_Color.png");
+		var specularMap = loadTexture("texture/" + textureParameters.material + "_Specular.png");
+		var roughnessMap = loadTexture("texture/" + textureParameters.material + "_Roughness.png");
 
 		//Passo gli uniforms agli shader
 		var uniforms = {
-			cspec: { type: "v3", value: new THREE.Vector3(0.04,0.04,0.04)},
-			cdiff: { type: "v3", value: new THREE.Vector3(0.8,0.8,0.8)},
-			roughness: {type: "f", value: 0.2},
-			normalMap: {type: "t", value: normalMap},
-			aoMap: {type: "t", value: aoMap},
-			normalScale: {type: "v2", value: new THREE.Vector2(1,1)},
-			pointLightPosition: {type: "v3", value: new THREE.Vector3()},
-			clight: {type: "v3", value: new THREE.Vector3()},
-			ambientLight: {type: "v3", value: new THREE.Vector3()}
+			specularMapBase: { type: "t", value: specularMapBase },
+			diffuseMapBase: { type: "t", value: diffuseMapBase },
+			roughnessMapBase: { type: "t", value: roughnessMapBase },
+			specularMap: { type: "t", value: specularMap },
+			diffuseMap: { type: "t", value: diffuseMap },
+			roughnessMap: { type: "t", value: roughnessMap },
+			pointLightPosition: { type: "v3", value: new THREE.Vector3() },
+			clight: { type: "v3", value: new THREE.Vector3() },
+			textureRepeat: { type: "v2", value: new THREE.Vector2(0.1,0.1) },
+			textureRepeatBase:{ type: "v2", value: new THREE.Vector2(0.01,0.01) }	
 		};
 		
 		//Assi cartesiani
@@ -159,53 +216,72 @@
 		
 		//Carico gli shader
 		vs = document.getElementById("vertex").textContent;
-		fs = document.getElementById("fragment").textContent;
+		specularDiffuseFragment = document.getElementById("specular-diffuse-fragment").textContent;
+		fragmentForBase = document.getElementById("fragment-for-base").textContent;
 		
 		//Materiale da shader
-		var myMaterial = new THREE.RawShaderMaterial({uniforms: uniforms, vertexShader: vs, fragmentShader: fs});
+		var myMaterial = new THREE.ShaderMaterial({uniforms: uniforms, vertexShader: vs, fragmentShader: specularDiffuseFragment});
 		
-		//Caricatore modello
-		var loader = new THREE.OBJLoader();
+		//Caricatore lampada
+		var loaderLamp = new THREE.OBJLoader();
 		//Carico il modello da source
-		loader.load(
+		loaderLamp.load(
+			'model/pixar_lamp.obj',
+			function ( group ) {
+				for(var i = 1; i < group.children.length; i++){
+					geometry = group.children[i].geometry;
+					mesh = new THREE.Mesh( geometry, myMaterial );
+					scene.add( mesh );
+				}
+		});
+		
+		//Caricatore base
+		var loaderBase = new THREE.OBJLoader();
+		var diffuseMapBase = loadTexture("texture/Bamboo_Base_Color.png");
+		var specularMapBase = loadTexture("texture/Bamboo_Specular.png");
+		var roughnessMapBase = loadTexture("texture/Bamboo_Roughness.png");
+		//Carico il modello da source
+		loaderBase.load(
+			'model/pixar_lamp.obj',
+			function ( group ) {
+					geometry = group.children[4].geometry;
+					var baseMaterial = new THREE.ShaderMaterial({uniforms: uniforms, vertexShader: vs, fragmentShader: fragmentForBase});
+					mesh = new THREE.Mesh( geometry, baseMaterial );
+					scene.add( mesh );
+				
+		});
+		
+		//Caricatore lampadina
+		var loaderBulb = new THREE.OBJLoader();
+		var path = "texture/Wood_";
+				var format = '.png';
+				var urls = [
+						path + 'Diffuse' + format, path + 'Diffuse' + format,
+						path + 'Diffuse' + format, path + 'Diffuse' + format,
+						path + 'Diffuse' + format, path + 'Diffuse' + format
+					];
+		var reflectionCube = new THREE.CubeTextureLoader().load( urls );
+		reflectionCube.format = THREE.RGBFormat;
+		//Carico la lampadina
+		loaderBulb.load(
 			'model/pixar_lamp.obj',
 			function ( group ) {
 				geometry = group.children[0].geometry;
-				geometry.center();
-				mesh = new THREE.Mesh( geometry, myMaterial );
-				mesh.scale.multiplyScalar(0.1);
-				scene.add( mesh );
-				
-		});
+				var lightMaterial = new THREE.MeshLambertMaterial({color: 0xffffff,
+       																envMap: reflectionCube,
+       																opacity: 0.5,
+       																transparent: true});
+				bulb = new THREE.Mesh(geometry, lightMaterial);
+				scene.add(bulb);
+			}
+		)
+		
+
 	
 		//Luce puntiforme
-		var lightMesh = new THREE.Mesh(new THREE.SphereGeometry(1,16,16), new THREE.MeshBasicMaterial({color: 0xffff00, wireframe: true}));
-		lightMesh.position.set(200, 200, 200);
+		var lightMesh = new THREE.Mesh(new THREE.SphereGeometry(16,16,16), new THREE.MeshBasicMaterial({color: 0xffff00, wireframe: true}));
+		lightMesh.position.set(200, 400, 200);
 		uniforms.pointLightPosition.value = new THREE.Vector3(lightMesh.position.x, lightMesh.position.y, lightMesh.position.z);
-		
-		//Carico la Cube Map
-		var loader = new THREE.CubeTextureLoader();
-		loader.setPath('envMap/');
-
-		var textureCube = loader.load([
-			'posx.jpg', 'negx.jpg',
-			'posy.jpg', 'negy.jpg',
-			'posz.jpg', 'negz.jpg'
-		]);
-		textureCube.format = THREE.RGBFormat;
-		textureCube.mapping = THREE.CubeReflectionMapping;
-		
-		/*Sfera di prova
-		var texture = new THREE.TextureLoader().load('texture/Bamboo_Diffuse.png');
-		texture.wrapS = THREE.RepeatWrapping;
-		texture.wrapT = THREE.RepeatWrapping;
-		texture.repeat.set( 4, 4 );
-		var geometry = new THREE.SphereGeometry(50, 60, 60);
-		var material = new THREE.MeshBasicMaterial({map: texture});
-		var sphere = new THREE.Mesh(geometry, material);
-		scene.add(sphere);
-		*/
-
 		
 		//Interfaccia per modifiche runtime
 		var gui;
@@ -247,8 +323,6 @@
 			stats.domElement.style.top = '0px';
 			document.body.appendChild(stats.domElement);
 			
-			//myMaterial.needsUpdate = true;
-			
 		}
 		
 		function onResize() {
@@ -280,33 +354,39 @@
 			gui.open();
 		}
 		
-		
 		function buildGui() {
-				clearGui();
-				lightSettings = gui.addFolder('Light Parameters');
-				lightSettings.add(lightParameters,'red').min(0).max(1).onChange( function(newVal) { render() });
-				lightSettings.add(lightParameters,'green').min(0).max(1).onChange( function(newVal) { render() });
-				lightSettings.add(lightParameters,'blue').min(0).max(1).onChange( function(newVal) { render() });
-				lightSettings.add(lightParameters,'intensity').min(0).max(10000).onChange( function(newVal) { render() });
-				ambientLightSettings = gui.addFolder('Ambient Light Parameters');
-				ambientLightSettings.add(ambientLightParameters,'red').min(0).max(1).onChange( function(newVal) { render() });
-				ambientLightSettings.add(ambientLightParameters,'green').min(0).max(1).onChange( function(newVal) { render() });
-				ambientLightSettings.add(ambientLightParameters,'blue').min(0).max(1).onChange( function(newVal) { render() });
-				ambientLightSettings.add(ambientLightParameters,'intensity').min(0).max(100).onChange( function(newVal) { render() });
-				textureSettings = gui.addFolder('Texture parameters');
-				textureSettings.add(textureParameters,'normalScale').min(-3).max(3).onChange( function( newVal ) {render()});
-				}
-			function updateUniforms() {
-					uniforms.clight.value = new THREE.Vector3(
-							lightParameters.red * lightParameters.intensity,
-					    lightParameters.green * lightParameters.intensity,
-							lightParameters.blue * lightParameters.intensity);
-					uniforms.ambientLight.value = new THREE.Vector3(
-							ambientLightParameters.red * ambientLightParameters.intensity,
-							ambientLightParameters.green * ambientLightParameters.intensity,
-							ambientLightParameters.blue * ambientLightParameters.intensity);
-					uniforms.normalScale.value = new THREE.Vector2( textureParameters.normalScale, textureParameters.normalScale );
+			clearGui();
+			lightSettings = gui.addFolder('Light Parameters');
+			lightSettings.add(lightParameters,'red').min(0).max(1).onChange( function(newVal) { render() });
+			lightSettings.add(lightParameters,'green').min(0).max(1).onChange( function(newVal) { render() });
+			lightSettings.add(lightParameters,'blue').min(0).max(1).onChange( function(newVal) { render() });
+			lightSettings.add(lightParameters,'intensity').min(0).max(10000).onChange( function(newVal) { render() });
+			textureSettings = gui.addFolder('Texture parameters');
+			textureSettings.add(textureParameters,'material',[ 'Aluminum', 'Misc_SolarPanelLarge', 'Concrete_RockyFoundation',
+			'Metal_ThickGrating' ]).onChange(
+				function( newVal ) {
+					diffuseMap = loadTexture( "textures/" + newVal + "_Diffuse.png" );
+					specularMap = loadTexture( "textures/" + newVal + "_Specular.png" );
+					roughnessMap = loadTexture( "textures/" + newVal + "_Roughness.png" );
+					ourMaterial.needsUpdate = true;
+				render()});
+			textureSettings.add(textureParameters,'repeatS').min(0.1).max(10).onChange( function( newVal ) {render()});
+			textureSettings.add(textureParameters,'repeatT').min(0.1).max(10).onChange( function( newVal ) {render()});
 			}
+
+		function updateUniforms() {
+			uniforms.clight.value = new THREE.Vector3(lightParameters.red * lightParameters.intensity, lightParameters.green * lightParameters.intensity, lightParameters.blue * lightParameters.intensity);
+			uniforms.textureRepeat.value = new THREE.Vector2( textureParameters.repeatS, textureParameters.repeatT);
+			uniforms.diffuseMap.value = diffuseMap;
+			uniforms.specularMap.value = specularMap;
+			uniforms.roughnessMap.value = roughnessMap;
+			uniforms.diffuseMapBase.value = diffuseMapBase;
+			uniforms.specularMapBase.value = specularMapBase;
+			uniforms.roughnessMapBase.value = roughnessMapBase;
+			
+		}
+
+		
 		
 		
 		init();
