@@ -1,6 +1,6 @@
 # Pixar Lamp
 
-![Pixar Lamp](../product-visualization-pigiofthestone/images/Pixar-Lamp.jpg)
+![Pixar Lamp](../master/images/Pixar-Lamp.jpg)
 
 ## Scelta del modello
 
