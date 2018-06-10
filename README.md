@@ -8,12 +8,12 @@ Per il progetto ho scelto la famosa lampada della Pixar. Ho iniziato prendendo u
 
 ## Struttura del progetto
 Il progetto consta di:
-- file [Acme inc.html](../master/Acme inc.html) che è il file finale che contiene il sito web stile eCommerce e il codice di Three.js con tutti i vari shaders;
+- file [Acme inc](../master/Acme inc.html) che è il file finale che contiene il sito web stile eCommerce e il codice di Three.js con tutti i vari shaders;
 - la cartella [lib](../master/lib) che contiene tutte le librerie;
 - la cartella [model](../master/(../master/model) che contiene i modelli della lampada utilizzata;
 - la cartella [logo](../master/logo) che contiene il logo del sito;
 - la cartella [texture](../master/texture) che contiene tutte le texture utilizzate per i vari materiali della lampada;
-- la cartella [envMap](../master/envMap) che contiene la environment map
+- la cartella [envMap](../master/envMap) che contiene la environment map;
 - le cartelle [css](../master/css) e [js](../master/js) che contengono i vari fogli di stile e le librerie utilizzate da Bootstrap per la costruzione del sito web.
 
 ## Implementazione
