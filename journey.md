@@ -41,4 +41,16 @@
 >Problemi
 - Le texture sembrano troppo compresse (RISOLTO usando come valori di textureRepeat 0.01)
 - La lampadina è effettivamente in trasparenza ma noto dei fenomeni di ombra che non riesco ad interpretare
+## Martedì 5 Giugno
+>Modifiche
+- Implementate le funzioni per modificare le texture
+- Ridisegnato il sito utilizzando bootstrap per la facilità di costruzione
+>Problemi
+- Le texture vengono troppo stirate (RISOLTO)
+## Mercoledì 6 e Giovedi 7 Giugno
+>Modifiche
+- Modificate tutte le coordinate UV delle texture per risolvere il problema di martedì 19 con 3DS Max
+## Venerdì 8 Giugno
+>Modifiche
+- Ultime modifiche e aggiustamenti
 
