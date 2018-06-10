@@ -1,6 +1,6 @@
 # Pixar Lamp
 
-![Pixar Lamp](https://www.geeky-gadgets.com/pixars-lamp-recreated-using-arduino-technology-video-03-12-2012/)
+![Pixar Lamp](../product-visualization-pigiofthestone/images/Pixar-Lamp.jpg)
 
 ## Scelta del modello
 
